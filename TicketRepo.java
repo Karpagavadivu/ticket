@@ -12,6 +12,4 @@ import com.ticket.ticketraise.entity.Ticket;
 public interface TicketRepo extends JpaRepository<Ticket, Long>{
 
     List<Ticket> findByPriority(String priority);
-    List<Ticket> findByStatus(String status);
-
 }

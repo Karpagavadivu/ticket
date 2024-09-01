@@ -1,15 +1,17 @@
 package com.ticket.ticketraise.controller;
 
+
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ticket.ticketraise.entity.Ticket;
@@ -22,18 +24,24 @@ public class TicketController {
     private TicketService Ticketservice;
 
     @PostMapping("/raise")
-    public Ticket raiseTicket(@RequestBody Ticket ticket) {
-        return Ticketservice.raiseTicket(ticket);
+    public ResponseEntity<Ticket> raiseTicket(@RequestBody Ticket ticket) {
+        return ResponseEntity.ok(Ticketservice.raiseTicket(ticket));
     }
 
-    @GetMapping("/view-by-priority")
-    public List<Ticket> viewTicketsByPriority(@RequestParam String priority) {
-        return Ticketservice.viewTicketsByPriority(priority);
+    @GetMapping("/view-by-priority/{priority}")
+    public ResponseEntity<List<Ticket>> viewTicketsByPriority(@PathVariable String priority) {
+        List<Ticket> tickets = Ticketservice.viewTicketsByPriority(priority);
+        return ResponseEntity.ok(tickets);
     }
 
     @GetMapping("/view/{ticketId}")
-    public Ticket getTicketById(@PathVariable Long ticketId) {
-        return Ticketservice.getTicketById(ticketId);
+    public ResponseEntity<Ticket> getTicketById(@PathVariable Long ticketId) {
+        Optional<Ticket> ticket = Ticketservice.getTicketById(ticketId);
+        if (ticket.isPresent()) {
+            return ResponseEntity.ok(ticket.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PutMapping("{ticketId}")
@@ -41,6 +49,20 @@ public class TicketController {
         return Ticketservice.resolveTicket(ticketId);
     }
 
+    // @PutMapping("{ticketId}")
+    // public ResponseEntity<Ticket> resolveTicket(@PathVariable Long ticketId, @RequestBody Ticket ticket) {
+    //     return ResponseEntity.ok (Ticketservice.resolveTicket(ticketId,ticket));
+    // }
+    
+//     @PutMapping("/resolve/{ticketId}")
+//     public ResponseEntity<Ticket> resolveTicket(@PathVariable Long ticketId, @RequestBody Ticket ticket) {
+//     Optional<Ticket> updatedTicket = Ticketservice.resolveTicket(ticketId, ticket);
+//     if (updatedTicket.isPresent()) {
+//         return ResponseEntity.ok(updatedTicket.get());
+//     } else {
+//         return ResponseEntity.notFound().build();
+//     }
+// }
 
 
 }
