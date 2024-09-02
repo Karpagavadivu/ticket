@@ -1,0 +1,68 @@
+Controller
+
+ @GetMapping("/customer-info/{customerId}")
+    public ResponseEntity<String> getCustomerInfo(@PathVariable Long customerId) {
+        CustomerInfo customerInfo = ticketService.getCustomerInfo(customerId);
+        if (customerInfo != null) {
+            String info = "Customer Info: Name = " + customerInfo.getFirstName() +
+                          ", Email = " + customerInfo.getEmail() +
+                          ", Phone = " + customerInfo.getPhoneNumber() +
+                          ", Address = " + customerInfo.getAddress();
+            return ResponseEntity.ok(info);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
+Service
+
+package com.ticket.ticketraise.service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import com.ticket.dto.CustomerInfo;
+import com.ticket.ticketraise.entity.Ticket;
+import com.ticket.ticketraise.repository.TicketRepo;
+
+@Service
+public class TicketService {
+    
+    @Autowired
+    private TicketRepo ticketRepo;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private static final String CUSTOMER_SERVICE_URL = "http://localhost:9595/api/customers/";
+
+    public Ticket raiseTicket(Ticket ticket) {
+        return ticketRepo.save(ticket);
+    }
+
+    public List<Ticket> viewTicketsByPriority(String priority) {
+        return ticketRepo.findByPriority(priority);
+    }
+
+    public Optional<Ticket> getTicketById(Long ticketId) {
+        return ticketRepo.findById(ticketId);
+    }
+
+    public Ticket resolveTicket(Long ticketId) {
+        Ticket ticket = ticketRepo.findById(ticketId).orElseThrow();
+        ticket.setStatus("resolved");
+        ticket.setResolvedAt(LocalDateTime.now());
+        return ticketRepo.save(ticket);
+    }
+
+    public CustomerInfo getCustomerInfo(Long customerId) {
+        String url = CUSTOMER_SERVICE_URL + customerId;
+        return restTemplate.getForObject(url, CustomerInfo.class);
+    }
+}
