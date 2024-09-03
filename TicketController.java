@@ -1,9 +1,10 @@
 package com.ticket.ticketraise.controller;
 
-
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,19 +15,32 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ticket.ticketraise.dto.customerInfo;
 import com.ticket.ticketraise.entity.Ticket;
 import com.ticket.ticketraise.service.TicketService;
 
 @RestController
 @RequestMapping("/api/support_tickets")
 public class TicketController {
+
+
+    private static final Logger logger = LoggerFactory.getLogger(TicketController.class);
+
     @Autowired
     private TicketService Ticketservice;
 
     @PostMapping("/raise")
     public ResponseEntity<Ticket> raiseTicket(@RequestBody Ticket ticket) {
+        
+        customerInfo customer = Ticketservice.getInfoFromCustomerInfo(ticket.getCustomerId());
+
+        // Log customer info for debugging
+        logger.info("Customer info retrieved: {}", customer);
+        
+        // Optionally, set more fields in the ticket using customer info
         return ResponseEntity.ok(Ticketservice.raiseTicket(ticket));
-    }
+}
+
 
     @GetMapping("/view-by-priority/{priority}")
     public ResponseEntity<List<Ticket>> viewTicketsByPriority(@PathVariable String priority) {
@@ -36,7 +50,7 @@ public class TicketController {
 
     @GetMapping("/view/{ticketId}")
     public ResponseEntity<Ticket> getTicketById(@PathVariable Long ticketId) {
-        Optional<Ticket> ticket = Ticketservice.getTicketById(ticketId);
+        Optional<Ticket> ticket=Ticketservice.getTicketById(ticketId);
         if (ticket.isPresent()) {
             return ResponseEntity.ok(ticket.get());
         } else {
@@ -48,21 +62,4 @@ public class TicketController {
     public Ticket resolveTicket(@PathVariable Long ticketId) {
         return Ticketservice.resolveTicket(ticketId);
     }
-
-    // @PutMapping("{ticketId}")
-    // public ResponseEntity<Ticket> resolveTicket(@PathVariable Long ticketId, @RequestBody Ticket ticket) {
-    //     return ResponseEntity.ok (Ticketservice.resolveTicket(ticketId,ticket));
-    // }
-    
-//     @PutMapping("/resolve/{ticketId}")
-//     public ResponseEntity<Ticket> resolveTicket(@PathVariable Long ticketId, @RequestBody Ticket ticket) {
-//     Optional<Ticket> updatedTicket = Ticketservice.resolveTicket(ticketId, ticket);
-//     if (updatedTicket.isPresent()) {
-//         return ResponseEntity.ok(updatedTicket.get());
-//     } else {
-//         return ResponseEntity.notFound().build();
-//     }
-// }
-
-
 }
